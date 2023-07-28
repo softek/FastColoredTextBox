@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Windows.Forms;
 using FastColoredTextBoxNS;
 
@@ -18,7 +14,7 @@ namespace Tester
             InitializeComponent();
         }
 
-        
+
         private void cbFont_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (cbFont.SelectedItem == null)
@@ -36,25 +32,23 @@ namespace Tester
 
         #region Build OpenType font list
 
-        List<ENUMLOGFONTEX> fontList = new List<ENUMLOGFONTEX>();
+        readonly List<ENUMLOGFONTEX> fontList = new List<ENUMLOGFONTEX>();
 
         protected override void OnLoad(EventArgs e)
         {
             //build list of OpenType fonts
-            LOGFONT lf = new LOGFONT();
+            var lf = new LOGFONT();
 
-            IntPtr plogFont = Marshal.AllocHGlobal(Marshal.SizeOf(lf));
+            var plogFont = Marshal.AllocHGlobal(Marshal.SizeOf(lf));
             Marshal.StructureToPtr(lf, plogFont, true);
 
             try
             {
                 fontList.Clear();
-                using (Graphics G = CreateGraphics())
-                {
-                    IntPtr P = G.GetHdc();
-                    EnumFontFamiliesEx(P, plogFont, Callback, IntPtr.Zero, 0);
-                    G.ReleaseHdc(P);
-                }
+                using var G = CreateGraphics();
+                var P = G.GetHdc();
+                EnumFontFamiliesEx(P, plogFont, Callback, IntPtr.Zero, 0);
+                G.ReleaseHdc(P);
             }
             finally
             {
@@ -62,10 +56,10 @@ namespace Tester
             }
 
             //sort fonts
-            fontList.Sort((f1, f2)=>f1.elfFullName.CompareTo(f2.elfFullName));
+            fontList.Sort((f1, f2) => f1.elfFullName.CompareTo(f2.elfFullName));
             //build combobox
             cbFont.Items.Clear();
-            foreach(var item in fontList)
+            foreach (var item in fontList)
                 cbFont.Items.Add(item);
         }
 
@@ -95,18 +89,18 @@ namespace Tester
             public byte tmStruckOut;
             public byte tmPitchAndFamily;
             public byte tmCharSet;
-            int ntmFlags;
-            int ntmSizeEM;
-            int ntmCellHeight;
-            int ntmAvgWidth;
+            readonly int ntmFlags;
+            readonly int ntmSizeEM;
+            readonly int ntmCellHeight;
+            readonly int ntmAvgWidth;
         }
 
         public struct FONTSIGNATURE
         {
             [MarshalAs(UnmanagedType.ByValArray)]
-            int[] fsUsb;
+            readonly int[] fsUsb;
             [MarshalAs(UnmanagedType.ByValArray)]
-            int[] fsCsb;
+            readonly int[] fsCsb;
         }
         public struct NEWTEXTMETRICEX
         {
@@ -147,7 +141,7 @@ namespace Tester
                 if (fontType != TRUETYPE_FONTTYPE)
                     fontList.Add(lpelfe);
             }
-            catch{}
+            catch { }
             return cnt;
         }
 
@@ -162,33 +156,31 @@ namespace Tester
     {
         readonly LOGFONT font;
 
-        public OpenTypeFontStyle(FastColoredTextBox fctb, LOGFONT font): base(null, null, FontStyle.Regular)
+        public OpenTypeFontStyle(FastColoredTextBox fctb, LOGFONT font) : base(null, null, FontStyle.Regular)
         {
             this.font = font;
             //measure font
-            using (var gr = fctb.CreateGraphics())
+            using var gr = fctb.CreateGraphics();
+            var HDC = gr.GetHdc();
+
+            var fontHandle = CreateFontIndirect(font);
+            var f = SelectObject(HDC, fontHandle);
+
+            var measureSize = new Size(0, 0);
+
+            try
             {
-                var HDC = gr.GetHdc();
-
-                var fontHandle = CreateFontIndirect(font);
-                var f = SelectObject(HDC, fontHandle);
-
-                var measureSize = new Size(0, 0);
-
-                try
-                {
-                    GetTextExtentPoint(HDC, "M", 1, ref measureSize);
-                }
-                finally
-                {
-                    DeleteObject(SelectObject(HDC, f));
-                    gr.ReleaseHdc(HDC);
-                }
-
-                fctb.CharWidth = measureSize.Width;
-                fctb.CharHeight = measureSize.Height + fctb.LineInterval;
-                fctb.NeedRecalc(true, true);
+                GetTextExtentPoint(HDC, "M", 1, ref measureSize);
             }
+            finally
+            {
+                DeleteObject(SelectObject(HDC, f));
+                gr.ReleaseHdc(HDC);
+            }
+
+            fctb.CharWidth = measureSize.Width;
+            fctb.CharHeight = measureSize.Height + fctb.LineInterval;
+            fctb.NeedRecalc(true, true);
         }
 
         [DllImport("gdi32.dll", CharSet = CharSet.Auto)]
@@ -207,17 +199,17 @@ namespace Tester
         static extern uint SetTextColor(IntPtr hdc, int crColor);
 
 
-        public override void Draw(Graphics gr, Point position, Range range)
+        public override void Draw(Graphics gr, Point position, FastColoredTextBoxNS.Range range)
         {
             //create font
-            IntPtr HDC = gr.GetHdc();
+            var HDC = gr.GetHdc();
             var fontHandle = CreateFontIndirect(font);
             var f = SelectObject(HDC, fontHandle);
             //set foreground and background colors
             SetTextColor(HDC, ColorTranslator.ToWin32(range.tb.ForeColor));
             SetBkColor(HDC, ColorTranslator.ToWin32(range.tb.BackColor));
 
-            
+
             //draw background
             if (BackgroundBrush != null)
                 gr.FillRectangle(BackgroundBrush, position.X, position.Y, (range.End.iChar - range.Start.iChar) * range.tb.CharWidth, range.tb.CharHeight);
@@ -225,7 +217,7 @@ namespace Tester
             //coordinates
             var y = position.Y + range.tb.LineInterval / 2;
             var x = position.X;
-            int dx = range.tb.CharWidth;
+            var dx = range.tb.CharWidth;
 
             //draw chars
             try

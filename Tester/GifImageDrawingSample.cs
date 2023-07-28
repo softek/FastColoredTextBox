@@ -1,22 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using FastColoredTextBoxNS;
-using System.Text.RegularExpressions;
-using System.Drawing.Imaging;
-using System.Timers;
 
 namespace Tester
 {
     public partial class GifImageDrawingSample : Form
     {
-        GifImageStyle style;
-        static string RegexSpecSymbolsPattern = @"[\^\$\[\]\(\)\.\\\*\+\|\?\{\}]";
+        readonly GifImageStyle style;
+        static readonly string RegexSpecSymbolsPattern = @"[\^\$\[\]\(\)\.\\\*\+\|\?\{\}]";
 
         public GifImageDrawingSample()
         {
@@ -41,7 +35,7 @@ namespace Tester
             e.ChangedRange.ClearStyle(StyleIndex.All);
             foreach (var key in style.ImagesByText.Keys)
             {
-                string pattern = Regex.Replace(key, RegexSpecSymbolsPattern, "\\$0");
+                var pattern = Regex.Replace(key, RegexSpecSymbolsPattern, "\\$0");
                 e.ChangedRange.SetStyle(style, pattern);
             }
         }
@@ -53,8 +47,8 @@ namespace Tester
     class GifImageStyle : TextStyle
     {
         public Dictionary<string, Image> ImagesByText { get; private set; }
-        FastColoredTextBox parent;
-        System.Windows.Forms.Timer timer;
+        readonly FastColoredTextBox parent;
+        readonly System.Windows.Forms.Timer timer;
 
         public GifImageStyle(FastColoredTextBox parent)
             : base(null, null, FontStyle.Regular)
@@ -65,7 +59,7 @@ namespace Tester
             //create timer
             timer = new System.Windows.Forms.Timer();
             timer.Interval = 100;
-            timer.Tick += (EventHandler)delegate
+            timer.Tick += delegate
             {
                 ImageAnimator.UpdateFrames();
                 parent.Invalidate();
@@ -84,37 +78,37 @@ namespace Tester
         {
         }
 
-        public override void Draw(Graphics gr, Point position, Range range)
+        public override void Draw(Graphics gr, Point position, FastColoredTextBoxNS.Range range)
         {
-            string text = range.Text;
-            int iChar = range.Start.iChar;
+            var text = range.Text;
+            var iChar = range.Start.iChar;
 
             while (text != "")
             {
-                bool replaced = false;
+                var replaced = false;
                 foreach (var pair in ImagesByText)
                 {
                     if (text.StartsWith(pair.Key))
                     {
-                        float k = (float)(pair.Key.Length * range.tb.CharWidth) / pair.Value.Width;
-                        if (k > 1) 
+                        var k = (float)(pair.Key.Length * range.tb.CharWidth) / pair.Value.Width;
+                        if (k > 1)
                             k = 1f;
                         //
-                        text = text.Substring(pair.Key.Length);
-                        RectangleF rect = new RectangleF(position.X + range.tb.CharWidth * pair.Key.Length / 2 - pair.Value.Width * k/2, position.Y, pair.Value.Width * k, pair.Value.Height * k);
+                        text = text[pair.Key.Length..];
+                        var rect = new RectangleF(position.X + range.tb.CharWidth * pair.Key.Length / 2 - pair.Value.Width * k / 2, position.Y, pair.Value.Width * k, pair.Value.Height * k);
                         gr.DrawImage(pair.Value, rect);
                         position.Offset(range.tb.CharWidth * pair.Key.Length, 0);
                         replaced = true;
-                        iChar+=pair.Key.Length;
+                        iChar += pair.Key.Length;
                         break;
                     }
                 }
-                if (!replaced && text.Length>0)
+                if (!replaced && text.Length > 0)
                 {
-                    Range r = new Range(range.tb, iChar, range.Start.iLine, iChar+1, range.Start.iLine);
+                    var r = new FastColoredTextBoxNS.Range(range.tb, iChar, range.Start.iLine, iChar + 1, range.Start.iLine);
                     base.Draw(gr, position, r);
                     position.Offset(range.tb.CharWidth, 0);
-                    text = text.Substring(1);
+                    text = text[1..];
                 }
             }
         }

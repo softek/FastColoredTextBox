@@ -1,20 +1,18 @@
-﻿using System.Windows.Forms;
-using FastColoredTextBoxNS;
-using System.Drawing;
-using System;
-using System.Linq;
+﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
+using FastColoredTextBoxNS;
 
 namespace Tester
 {
     public partial class AutocompleteSample2 : Form
     {
-        AutocompleteMenu popupMenu;
-        string[] keywords = { "abstract", "as", "base", "bool", "break", "byte", "case", "catch", "char", "checked", "class", "const", "continue", "decimal", "default", "delegate", "do", "double", "else", "enum", "event", "explicit", "extern", "false", "finally", "fixed", "float", "for", "foreach", "goto", "if", "implicit", "in", "int", "interface", "internal", "is", "lock", "long", "namespace", "new", "null", "object", "operator", "out", "override", "params", "private", "protected", "public", "readonly", "ref", "return", "sbyte", "sealed", "short", "sizeof", "stackalloc", "static", "string", "struct", "switch", "this", "throw", "true", "try", "typeof", "uint", "ulong", "unchecked", "unsafe", "ushort", "using", "virtual", "void", "volatile", "while", "add", "alias", "ascending", "descending", "dynamic", "from", "get", "global", "group", "into", "join", "let", "orderby", "partial", "remove", "select", "set", "value", "var", "where", "yield" };
-        string[] methods = { "Equals()", "GetHashCode()", "GetType()", "ToString()"};
-        string[] snippets = { "if(^)\n{\n;\n}", "if(^)\n{\n;\n}\nelse\n{\n;\n}", "for(^;;)\n{\n;\n}", "while(^)\n{\n;\n}", "do${\n^;\n}while();", "switch(^)\n{\ncase : break;\n}"};
-        string[] declarationSnippets = { 
+        readonly AutocompleteMenu popupMenu;
+        readonly string[] keywords = { "abstract", "as", "base", "bool", "break", "byte", "case", "catch", "char", "checked", "class", "const", "continue", "decimal", "default", "delegate", "do", "double", "else", "enum", "event", "explicit", "extern", "false", "finally", "fixed", "float", "for", "foreach", "goto", "if", "implicit", "in", "int", "interface", "internal", "is", "lock", "long", "namespace", "new", "null", "object", "operator", "out", "override", "params", "private", "protected", "public", "readonly", "ref", "return", "sbyte", "sealed", "short", "sizeof", "stackalloc", "static", "string", "struct", "switch", "this", "throw", "true", "try", "typeof", "uint", "ulong", "unchecked", "unsafe", "ushort", "using", "virtual", "void", "volatile", "while", "add", "alias", "ascending", "descending", "dynamic", "from", "get", "global", "group", "into", "join", "let", "orderby", "partial", "remove", "select", "set", "value", "var", "where", "yield" };
+        readonly string[] methods = { "Equals()", "GetHashCode()", "GetType()", "ToString()" };
+        readonly string[] snippets = { "if(^)\n{\n;\n}", "if(^)\n{\n;\n}\nelse\n{\n;\n}", "for(^;;)\n{\n;\n}", "while(^)\n{\n;\n}", "do${\n^;\n}while();", "switch(^)\n{\ncase : break;\n}" };
+        readonly string[] declarationSnippets = {
                "public class ^\n{\n}", "private class ^\n{\n}", "internal class ^\n{\n}",
                "public struct ^\n{\n;\n}", "private struct ^\n{\n;\n}", "internal struct ^\n{\n;\n}",
                "public void ^()\n{\n;\n}", "private void ^()\n{\n;\n}", "internal void ^()\n{\n;\n}", "protected void ^()\n{\n;\n}",
@@ -36,7 +34,7 @@ namespace Tester
 
         private void BuildAutocompleteMenu()
         {
-            List<AutocompleteItem> items = new List<AutocompleteItem>();
+            var items = new List<AutocompleteItem>();
 
             foreach (var item in snippets)
                 items.Add(new SnippetAutocompleteItem(item) { ImageIndex = 1 });
@@ -80,9 +78,9 @@ namespace Tester
         /// </summary>
         class InsertSpaceSnippet : AutocompleteItem
         {
-            string pattern;
+            readonly string pattern;
 
-            public InsertSpaceSnippet(string pattern):base("")
+            public InsertSpaceSnippet(string pattern) : base("")
             {
                 this.pattern = pattern;
             }
@@ -97,7 +95,7 @@ namespace Tester
                 if (Regex.IsMatch(fragmentText, pattern))
                 {
                     Text = InsertSpaces(fragmentText);
-                    if(Text != fragmentText)
+                    if (Text != fragmentText)
                         return CompareResult.Visible;
                 }
                 return CompareResult.Hidden;
@@ -106,7 +104,7 @@ namespace Tester
             public string InsertSpaces(string fragment)
             {
                 var m = Regex.Match(fragment, pattern);
-                if (m == null) 
+                if (m == null)
                     return fragment;
                 if (m.Groups[1].Value == "" && m.Groups[3].Value == "")
                     return fragment;
@@ -154,8 +152,8 @@ namespace Tester
             public override string GetTextForReplace()
             {
                 //extend range
-                Range r = Parent.Fragment;
-                Place end = r.End;
+                var r = Parent.Fragment;
+                var end = r.End;
                 r.Start = enterPlace;
                 r.End = r.End;
                 //insert line break

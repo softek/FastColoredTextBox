@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.IO;
-using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using FastColoredTextBoxNS;
-using System.Linq;
 
 namespace Tester
 {
@@ -18,11 +14,11 @@ namespace Tester
 
         private void button1_Click(object sender, EventArgs e)
         {
-            var r = new Range(fctb, 2);
+            var r = new FastColoredTextBoxNS.Range(fctb, 2);
             fctb.SelectedText = "new line value";
         }
 
-        private ColorStyle colorStyle = new ColorStyle(Brushes.Black, Brushes.White, FontStyle.Regular);
+        private readonly ColorStyle colorStyle = new ColorStyle(Brushes.Black, Brushes.White, FontStyle.Regular);
 
         private void fctb_TextChanged(object sender, TextChangedEventArgs e)
         {
@@ -36,11 +32,11 @@ namespace Tester
         {
         }
 
-        public override void Draw(Graphics gr, Point position, Range range)
+        public override void Draw(Graphics gr, Point position, FastColoredTextBoxNS.Range range)
         {
             //get color name
             var parts = range.Text.Split('.');
-            var colorName = parts[parts.Length - 1];
+            var colorName = parts[^1];
             var color = Color.FromName(colorName);
             (BackgroundBrush as SolidBrush).Color = color;
             base.Draw(gr, position, range);

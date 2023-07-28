@@ -13,8 +13,8 @@ namespace Tester
     public partial class DiffMergeSample : Form
     {
         int updating;
-        Style greenStyle;
-        Style redStyle;
+        readonly Style greenStyle;
+        readonly Style redStyle;
 
         public DiffMergeSample()
         {
@@ -68,7 +68,7 @@ namespace Tester
             }
 
             if (curLine < tb.LinesCount)
-                tb.Selection = new Range(tb, 0, curLine, 0, curLine);
+                tb.Selection = new FastColoredTextBoxNS.Range(tb, 0, curLine, 0, curLine);
             //
             EndUpdate();
         }
@@ -87,7 +87,7 @@ namespace Tester
         {
             if (!File.Exists(tbFirstFile.Text) && !File.Exists(tbSecondFile.Text))
             {
-                MessageBox.Show(this,"Please select a valid file", "Invalid file");
+                MessageBox.Show(this, "Please select a valid file", "Invalid file");
                 return;
             }
 
@@ -95,7 +95,7 @@ namespace Tester
             fctb2.Clear();
 
             Cursor = Cursors.WaitCursor;
-           
+
             if (Path.GetExtension(tbFirstFile.Text).ToLower() == ".cs")
                 fctb1.Language = fctb2.Language = Language.CSharp;
             else
@@ -117,9 +117,9 @@ namespace Tester
 
         private void Process(Lines lines)
         {
-            foreach(var line in lines)
+            foreach (var line in lines)
             {
-                switch(line.state)
+                switch (line.state)
                 {
                     case DiffType.None:
                         fctb1.AppendText(line.line + Environment.NewLine);
@@ -146,8 +146,8 @@ namespace Tester
     {
         public class SimpleDiff<T>
         {
-            private IList<T> _left;
-            private IList<T> _right;
+            private readonly IList<T> _left;
+            private readonly IList<T> _right;
             private int[,] _matrix;
             private bool _matrixCreated;
             private int _preSkip;
@@ -176,7 +176,7 @@ namespace Tester
             {
                 if (!_matrixCreated)
                 {
-                    Stopwatch sw = new Stopwatch();
+                    var sw = new Stopwatch();
                     sw.Start();
                     CalculatePreSkip();
                     CalculatePostSkip();
@@ -185,16 +185,16 @@ namespace Tester
                     this.ElapsedTime = sw.Elapsed;
                 }
 
-                for (int i = 0; i < _preSkip; i++)
+                for (var i = 0; i < _preSkip; i++)
                 {
                     FireLineUpdate(DiffType.None, i, -1);
                 }
 
-                int totalSkip = _preSkip + _postSkip;
+                var totalSkip = _preSkip + _postSkip;
                 ShowDiff(_left.Count - totalSkip, _right.Count - totalSkip);
 
-                int leftLen = _left.Count;
-                for (int i = _postSkip; i > 0; i--)
+                var leftLen = _left.Count;
+                for (var i = _postSkip; i > 0; i--)
                 {
                     FireLineUpdate(DiffType.None, leftLen - i, -1);
                 }
@@ -209,8 +209,8 @@ namespace Tester
             /// </summary>
             private void CalculatePostSkip()
             {
-                int leftLen = _left.Count;
-                int rightLen = _right.Count;
+                var leftLen = _left.Count;
+                var rightLen = _right.Count;
                 while (_postSkip < leftLen && _postSkip < rightLen &&
                        _postSkip < (leftLen - _preSkip) &&
                        _compareFunc(_left[leftLen - _postSkip - 1], _right[rightLen - _postSkip - 1]))
@@ -226,8 +226,8 @@ namespace Tester
             /// </summary>
             private void CalculatePreSkip()
             {
-                int leftLen = _left.Count;
-                int rightLen = _right.Count;
+                var leftLen = _left.Count;
+                var rightLen = _right.Count;
                 while (_preSkip < leftLen && _preSkip < rightLen &&
                        _compareFunc(_left[_preSkip], _right[_preSkip]))
                 {
@@ -277,20 +277,20 @@ namespace Tester
             /// </summary>
             private void CreateLCSMatrix()
             {
-                int totalSkip = _preSkip + _postSkip;
+                var totalSkip = _preSkip + _postSkip;
                 if (totalSkip >= _left.Count || totalSkip >= _right.Count)
                     return;
 
                 // We only create a matrix large enough for the
                 // unskipped contents of the diff'ed arrays
-                _matrix = new int[_left.Count - totalSkip + 1,_right.Count - totalSkip + 1];
+                _matrix = new int[_left.Count - totalSkip + 1, _right.Count - totalSkip + 1];
 
-                for (int i = 1; i <= _left.Count - totalSkip; i++)
+                for (var i = 1; i <= _left.Count - totalSkip; i++)
                 {
                     // Simple optimization to avoid this calculation
                     // inside the outer loop (may have got JIT optimized 
                     // but my tests showed a minor improvement in speed)
-                    int leftIndex = _preSkip + i - 1;
+                    var leftIndex = _preSkip + i - 1;
 
                     // Again, instead of calculating the adjusted index inside
                     // the loop, I initialize it under the assumption that
@@ -315,7 +315,7 @@ namespace Tester
                 if (local == null)
                     return;
 
-                T lineValue = leftIndex >= 0 ? _left[leftIndex] : _right[rightIndex];
+                var lineValue = leftIndex >= 0 ? _left[leftIndex] : _right[rightIndex];
 
                 local(this, new DiffEventArgs<T>(diffType, lineValue, leftIndex, rightIndex));
             }
@@ -323,7 +323,7 @@ namespace Tester
             private void InitializeCompareFunc()
             {
                 // Special case for String types
-                if (typeof (T) == typeof (String))
+                if (typeof(T) == typeof(String))
                 {
                     _compareFunc = StringCompare;
                 }
@@ -407,7 +407,7 @@ namespace Tester
             /// </summary>
             public override bool Equals(object obj)
             {
-                return Object.Equals(line, ((Line) obj).line);
+                return Object.Equals(line, ((Line)obj).line);
             }
 
             public static bool operator ==(Line line1, Line line2)
@@ -432,7 +432,7 @@ namespace Tester
         public class Lines : List<Line>, IEquatable<Lines>
         {
             //эта строка нужна для хранения строк, вставленных в самом начале, до первой строки исходного файла
-            private Line fictiveLine = new Line("===fictive line===") {state = DiffType.Deleted};
+            private Line fictiveLine = new Line("===fictive line===") { state = DiffType.Deleted };
 
             public Lines()
             {
@@ -464,7 +464,7 @@ namespace Tester
             /// </summary>
             public static Lines Load(string fileName, Encoding enc = null)
             {
-                Lines lines = new Lines();
+                var lines = new Lines();
                 foreach (var line in File.ReadAllLines(fileName, enc ?? Encoding.Default))
                     lines.Add(new Line(line));
 
@@ -476,8 +476,8 @@ namespace Tester
             /// </summary>
             public void Merge(Lines lines)
             {
-                SimpleDiff<Line> diff = new SimpleDiff<Line>(this, lines);
-                int iLine = -1;
+                var diff = new SimpleDiff<Line>(this, lines);
+                var iLine = -1;
 
                 diff.LineUpdate += (o, e) =>
                 {
@@ -508,7 +508,7 @@ namespace Tester
             /// </summary>
             public Lines Clone()
             {
-                Lines result = new Lines(this.Count);
+                var result = new Lines(this.Count);
                 foreach (var line in this)
                     result.Add(new Line(line.line));
 
@@ -522,7 +522,7 @@ namespace Tester
             {
                 if (Count != other.Count)
                     return false;
-                for (int i = 0; i < Count; i++)
+                for (var i = 0; i < Count; i++)
                     if (this[i] != other[i])
                         return false;
                 return true;
@@ -541,8 +541,8 @@ namespace Tester
             /// </summary>
             public Lines Expand(int from, int to)
             {
-                Lines result = new Lines();
-                for (int i = from; i <= to; i++)
+                var result = new Lines();
+                for (var i = from; i <= to; i++)
                 {
                     if (this[i].state != DiffType.Deleted)
                         result.Add(this[i]);

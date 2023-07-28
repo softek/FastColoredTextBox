@@ -1,22 +1,17 @@
-Imports FastColoredTextBoxNS
-Imports System
-Imports System.Collections.Generic
-Imports System.Drawing
-
 Namespace TesterVB
     Public Class InvisibleCharsRenderer
         Inherits Style
 
-        Private pen As Pen
+        Private ReadOnly pen As Pen
 
         Public Sub New(pen As Pen)
             Me.pen = pen
         End Sub
 
-        Public Overrides Sub Draw(gr As Graphics, position As Point, range As Range)
+        Public Overrides Sub Draw(gr As Graphics, position As Point, range As FastColoredTextBoxNS.Range)
             Dim tb As FastColoredTextBox = range.tb
             Using brush As Brush = New SolidBrush(Me.pen.Color)
-                For Each place As Place In CType(range, IEnumerable(Of Place))
+                For Each place As Place In range
                     Dim c As Char = tb(place).c
                     If c <> " " Then
                         GoTo IL_BC

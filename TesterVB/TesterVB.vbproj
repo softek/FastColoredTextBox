@@ -5,7 +5,7 @@
     <OutputType>WinExe</OutputType>
     <StartupObject>TesterVB.My.MyApplication</StartupObject>
     <MyType>WindowsForms</MyType>
-    <TargetFramework>net35</TargetFramework>
+    <TargetFramework>net7.0-windows</TargetFramework>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -48,8 +48,6 @@
     <OptionInfer>On</OptionInfer>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System.Deployment" />
-    <Reference Include="System.Windows.Forms" />
     <Reference Include="TabStrip">
       <HintPath>..\Tester\bin\Debug\TabStrip.dll</HintPath>
     </Reference>

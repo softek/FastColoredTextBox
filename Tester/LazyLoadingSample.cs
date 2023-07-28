@@ -1,14 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
+using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using System.IO;
-using System.Diagnostics;
 using FastColoredTextBoxNS;
 
 namespace Tester
@@ -49,7 +43,7 @@ namespace Tester
             //expand visible range (+- margin)
             var startLine = Math.Max(0, fctb.VisibleRange.Start.iLine - margin);
             var endLine = Math.Min(fctb.LinesCount - 1, fctb.VisibleRange.End.iLine + margin);
-            var range = new Range(fctb, 0, startLine, 0, endLine);
+            var range = new FastColoredTextBoxNS.Range(fctb, 0, startLine, 0, endLine);
             //clear folding markers
             range.ClearFoldingMarkers();
             //set markers for folding
@@ -72,7 +66,7 @@ namespace Tester
 
         private void miSave_Click(object sender, EventArgs e)
         {
-            if(sfd.ShowDialog() == DialogResult.OK)
+            if (sfd.ShowDialog() == DialogResult.OK)
             {
                 fctb.SaveToFile(sfd.FileName, Encoding.UTF8);
             }
@@ -80,19 +74,19 @@ namespace Tester
 
         private void createTestFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Random rnd = new Random();
+            var rnd = new Random();
 
             if (sfd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-            using(StreamWriter sw = new StreamWriter(sfd.FileName, false, Encoding.Default))
-            {
-                //create large test file
-                for (int j = 0; j < 130; j++)
+                using (var sw = new StreamWriter(sfd.FileName, false, Encoding.Default))
                 {
-                    sw.WriteLine("\r\n--====" + j + "=====--\r\n");
-                    for (int i = 0; i < 10000; i++)
-                        sw.WriteLine(string.Format("N{0:0000} X{1} Y{2} Z{3}", i, rnd.Next(), rnd.Next(), rnd.Next()));
+                    //create large test file
+                    for (var j = 0; j < 130; j++)
+                    {
+                        sw.WriteLine("\r\n--====" + j + "=====--\r\n");
+                        for (var i = 0; i < 10000; i++)
+                            sw.WriteLine(string.Format("N{0:0000} X{1} Y{2} Z{3}", i, rnd.Next(), rnd.Next(), rnd.Next()));
+                    }
                 }
-            }
         }
 
         private void collapseAllFoldingBlocksToolStripMenuItem_Click(object sender, EventArgs e)

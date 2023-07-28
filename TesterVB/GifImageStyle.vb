@@ -1,16 +1,10 @@
-Imports FastColoredTextBoxNS
-Imports System
-Imports System.Collections.Generic
-Imports System.Drawing
-Imports System.Windows.Forms
-
 Namespace TesterVB
     Friend Class GifImageStyle
         Inherits TextStyle
 
-        Private parent As FastColoredTextBox
+        Private ReadOnly parent As FastColoredTextBox
 
-        Private timer As Timer
+        Private ReadOnly timer As Timer
 
         Public Property ImagesByText() As Dictionary(Of String, Image)
 
@@ -38,19 +32,19 @@ Namespace TesterVB
         Private Sub OnFrameChanged(sender As Object, args As EventArgs)
         End Sub
 
-        Public Overrides Sub Draw(gr As Graphics, position As Point, range As Range)
+        Public Overrides Sub Draw(gr As Graphics, position As Point, range As FastColoredTextBoxNS.Range)
             Dim text As String = range.Text
             Dim iChar As Integer = range.Start.iChar
             While text <> ""
                 Dim replaced As Boolean = False
                 For Each pair As KeyValuePair(Of String, Image) In Me.ImagesByText
                     If text.StartsWith(pair.Key) Then
-                        Dim i As Single = CSng(pair.Key.Length * range.tb.CharWidth) / CSng(pair.Value.Width)
+                        Dim i As Single = pair.Key.Length * range.tb.CharWidth / CSng(pair.Value.Width)
                         If i > 1.0F Then
                             i = 1.0F
                         End If
                         text = text.Substring(pair.Key.Length)
-                        Dim rect As RectangleF = New RectangleF(CSng(position.X + range.tb.CharWidth * pair.Key.Length / 2) - CSng(pair.Value.Width) * i / 2.0F, CSng(position.Y), CSng(pair.Value.Width) * i, CSng(pair.Value.Height) * i)
+                        Dim rect As RectangleF = New RectangleF(CSng(position.X + range.tb.CharWidth * pair.Key.Length / 2) - pair.Value.Width * i / 2.0F, position.Y, pair.Value.Width * i, pair.Value.Height * i)
                         gr.DrawImage(pair.Value, rect)
                         position.Offset(range.tb.CharWidth * pair.Key.Length, 0)
                         replaced = True
@@ -59,7 +53,7 @@ Namespace TesterVB
                     End If
                 Next
                 If Not replaced AndAlso text.Length > 0 Then
-                    Dim r As Range = New Range(range.tb, iChar, range.Start.iLine, iChar + 1, range.Start.iLine)
+                    Dim r As New FastColoredTextBoxNS.Range(range.tb, iChar, range.Start.iLine, iChar + 1, range.Start.iLine)
                     MyBase.Draw(gr, position, r)
                     position.Offset(range.tb.CharWidth, 0)
                     text = text.Substring(1)

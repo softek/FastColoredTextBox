@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using FastColoredTextBoxNS;
-using System.Drawing.Drawing2D;
 
 namespace Tester
 {
     public partial class MarkerToolSample : Form
     {
         //Shortcut style
-        ShortcutStyle shortCutStyle = new ShortcutStyle(Pens.Maroon);
+        readonly ShortcutStyle shortCutStyle = new ShortcutStyle(Pens.Maroon);
         //Marker styles
-        MarkerStyle YellowStyle = new MarkerStyle(new SolidBrush(Color.FromArgb(180, Color.Yellow)));
-        MarkerStyle RedStyle = new MarkerStyle(new SolidBrush(Color.FromArgb(180, Color.Red)));
-        MarkerStyle GreenStyle = new MarkerStyle(new SolidBrush(Color.FromArgb(180, Color.Green)));
+        readonly MarkerStyle YellowStyle = new MarkerStyle(new SolidBrush(Color.FromArgb(180, Color.Yellow)));
+        readonly MarkerStyle RedStyle = new MarkerStyle(new SolidBrush(Color.FromArgb(180, Color.Red)));
+        readonly MarkerStyle GreenStyle = new MarkerStyle(new SolidBrush(Color.FromArgb(180, Color.Green)));
 
         public MarkerToolSample()
         {
@@ -30,7 +30,7 @@ namespace Tester
         private void fctb_SelectionChangedDelayed(object sender, EventArgs e)
         {
             //here we draw shortcut for selection area
-            Range selection = fctb.Selection;
+            var selection = fctb.Selection;
             //clear previous shortcuts
             fctb.VisibleRange.ClearStyle(shortCutStyle);
             //create shortcuts
@@ -61,7 +61,7 @@ namespace Tester
         {
             TrimSelection();
             //set background style
-            switch((string)((sender as ToolStripMenuItem).Tag))
+            switch ((string)((sender as ToolStripMenuItem).Tag))
             {
                 case "yellow": fctb.Selection.SetStyle(YellowStyle); break;
                 case "red": fctb.Selection.SetStyle(RedStyle); break;

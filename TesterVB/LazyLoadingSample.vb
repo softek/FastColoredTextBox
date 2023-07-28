@@ -1,12 +1,7 @@
-Imports FastColoredTextBoxNS
-Imports System
-Imports System.Collections.Generic
 Imports System.ComponentModel
-Imports System.Drawing
 Imports System.IO
 Imports System.Text
 Imports System.Text.RegularExpressions
-Imports System.Windows.Forms
 
 Namespace TesterVB
 
@@ -15,7 +10,7 @@ Namespace TesterVB
 
         Private Const marging As Integer = 2000
 
-        Private components As IContainer = Nothing
+        Private ReadOnly components As IContainer = Nothing
 
         Private fctb As FastColoredTextBox
 
@@ -180,7 +175,7 @@ Namespace TesterVB
         Private Sub HighlightVisibleRange()
             Dim startLine As Integer = Math.Max(0, Me.fctb.VisibleRange.Start.iLine - 2000)
             Dim endLine As Integer = Math.Min(Me.fctb.LinesCount - 1, Me.fctb.VisibleRange.[End].iLine + 2000)
-            Dim range As Range = New Range(Me.fctb, 0, startLine, 0, endLine)
+            Dim range As New FastColoredTextBoxNS.Range(Me.fctb, 0, startLine, 0, endLine)
             range.ClearFoldingMarkers()
             range.SetFoldingMarkers("N\d\d00", "N\d\d99")
             range.ClearStyle(StyleIndex.All)

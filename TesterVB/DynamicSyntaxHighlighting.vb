@@ -1,23 +1,19 @@
-Imports FastColoredTextBoxNS
-Imports System
 Imports System.ComponentModel
-Imports System.Drawing
 Imports System.Text.RegularExpressions
-Imports System.Windows.Forms
 
 Namespace TesterVB
     Public Class DynamicSyntaxHighlighting
         Inherits Form
 
-        Private components As IContainer = Nothing
+        Private ReadOnly components As IContainer = Nothing
 
         Private fctb As FastColoredTextBox
 
         Private label1 As Label
 
-        Private KeywordsStyle As Style = New TextStyle(Brushes.Green, Nothing, FontStyle.Regular)
+        Private ReadOnly KeywordsStyle As Style = New TextStyle(Brushes.Green, Nothing, FontStyle.Regular)
 
-        Private FunctionNameStyle As Style = New TextStyle(Brushes.Blue, Nothing, FontStyle.Regular)
+        Private ReadOnly FunctionNameStyle As Style = New TextStyle(Brushes.Blue, Nothing, FontStyle.Regular)
 
         Protected Overrides Sub Dispose(disposing As Boolean)
             If disposing AndAlso Me.components IsNot Nothing Then
@@ -78,7 +74,7 @@ Namespace TesterVB
         Private Sub fctb_TextChangedDelayed(sender As Object, e As TextChangedEventArgs)
             Me.fctb.Range.ClearStyle(New Style() {Me.KeywordsStyle, Me.FunctionNameStyle})
             Me.fctb.Range.SetStyle(Me.KeywordsStyle, "\b(and|eval|else|if|lambda|or|set|defun)\b", RegexOptions.IgnoreCase)
-            For Each found As Range In Me.fctb.GetRanges("\b(defun|DEFUN)\s+(?<range>\w+)\b")
+            For Each found As FastColoredTextBoxNS.Range In Me.fctb.GetRanges("\b(defun|DEFUN)\s+(?<range>\w+)\b")
                 Me.fctb.Range.SetStyle(Me.FunctionNameStyle, "\b" + found.Text + "\b")
             Next
         End Sub

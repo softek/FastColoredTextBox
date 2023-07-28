@@ -1,34 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
-using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading;
 using System.Windows.Forms;
 using FarsiLibrary.Win;
 using FastColoredTextBoxNS;
-using System.IO;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Drawing.Drawing2D;
 
 namespace Tester
 {
     public partial class PowerfulCSharpEditor : Form
     {
-        string[] keywords = { "abstract", "as", "base", "bool", "break", "byte", "case", "catch", "char", "checked", "class", "const", "continue", "decimal", "default", "delegate", "do", "double", "else", "enum", "event", "explicit", "extern", "false", "finally", "fixed", "float", "for", "foreach", "goto", "if", "implicit", "in", "int", "interface", "internal", "is", "lock", "long", "namespace", "new", "null", "object", "operator", "out", "override", "params", "private", "protected", "public", "readonly", "ref", "return", "sbyte", "sealed", "short", "sizeof", "stackalloc", "static", "string", "struct", "switch", "this", "throw", "true", "try", "typeof", "uint", "ulong", "unchecked", "unsafe", "ushort", "using", "virtual", "void", "volatile", "while", "add", "alias", "ascending", "descending", "dynamic", "from", "get", "global", "group", "into", "join", "let", "orderby", "partial", "remove", "select", "set", "value", "var", "where", "yield" };
-        string[] methods = { "Equals()", "GetHashCode()", "GetType()", "ToString()" };
-        string[] snippets = { "if(^)\n{\n;\n}", "if(^)\n{\n;\n}\nelse\n{\n;\n}", "for(^;;)\n{\n;\n}", "while(^)\n{\n;\n}", "do\n{\n^;\n}while();", "switch(^)\n{\ncase : break;\n}" };
-        string[] declarationSnippets = { 
+        readonly string[] keywords = { "abstract", "as", "base", "bool", "break", "byte", "case", "catch", "char", "checked", "class", "const", "continue", "decimal", "default", "delegate", "do", "double", "else", "enum", "event", "explicit", "extern", "false", "finally", "fixed", "float", "for", "foreach", "goto", "if", "implicit", "in", "int", "interface", "internal", "is", "lock", "long", "namespace", "new", "null", "object", "operator", "out", "override", "params", "private", "protected", "public", "readonly", "ref", "return", "sbyte", "sealed", "short", "sizeof", "stackalloc", "static", "string", "struct", "switch", "this", "throw", "true", "try", "typeof", "uint", "ulong", "unchecked", "unsafe", "ushort", "using", "virtual", "void", "volatile", "while", "add", "alias", "ascending", "descending", "dynamic", "from", "get", "global", "group", "into", "join", "let", "orderby", "partial", "remove", "select", "set", "value", "var", "where", "yield" };
+        readonly string[] methods = { "Equals()", "GetHashCode()", "GetType()", "ToString()" };
+        readonly string[] snippets = { "if(^)\n{\n;\n}", "if(^)\n{\n;\n}\nelse\n{\n;\n}", "for(^;;)\n{\n;\n}", "while(^)\n{\n;\n}", "do\n{\n^;\n}while();", "switch(^)\n{\ncase : break;\n}" };
+        readonly string[] declarationSnippets = {
                "public class ^\n{\n}", "private class ^\n{\n}", "internal class ^\n{\n}",
                "public struct ^\n{\n;\n}", "private struct ^\n{\n;\n}", "internal struct ^\n{\n;\n}",
                "public void ^()\n{\n;\n}", "private void ^()\n{\n;\n}", "internal void ^()\n{\n;\n}", "protected void ^()\n{\n;\n}",
                "public ^{ get; set; }", "private ^{ get; set; }", "internal ^{ get; set; }", "protected ^{ get; set; }"
                };
-        Style invisibleCharsStyle = new InvisibleCharsRenderer(Pens.Gray);
-        Color currentLineColor = Color.FromArgb(100, 210, 210, 255);
-        Color changedLineColor = Color.FromArgb(255, 230, 230, 255);
+        readonly Style invisibleCharsStyle = new InvisibleCharsRenderer(Pens.Gray);
+        readonly Color currentLineColor = Color.FromArgb(100, 210, 210, 255);
+        readonly Color changedLineColor = Color.FromArgb(255, 230, 230, 255);
 
 
         public PowerfulCSharpEditor()
@@ -36,7 +33,7 @@ namespace Tester
             InitializeComponent();
 
             //init menu images
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PowerfulCSharpEditor));
+            var resources = new System.ComponentModel.ComponentResourceManager(typeof(PowerfulCSharpEditor));
             copyToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("copyToolStripButton.Image")));
             cutToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("cutToolStripButton.Image")));
             pasteToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("pasteToolStripButton.Image")));
@@ -48,7 +45,7 @@ namespace Tester
             CreateTab(null);
         }
 
-        private Style sameWordsStyle = new MarkerStyle(new SolidBrush(Color.FromArgb(50, Color.Gray)));
+        private readonly Style sameWordsStyle = new MarkerStyle(new SolidBrush(Color.FromArgb(50, Color.Gray)));
 
         private void CreateTab(string fileName)
         {
@@ -63,7 +60,7 @@ namespace Tester
                 tb.LeftPadding = 17;
                 tb.Language = Language.CSharp;
                 tb.AddStyle(sameWordsStyle);//same words style
-                var tab = new FATabStripItem(fileName!=null?Path.GetFileName(fileName):"[new]", tb);
+                var tab = new FATabStripItem(fileName != null ? Path.GetFileName(fileName) : "[new]", tb);
                 tab.Tag = fileName;
                 if (fileName != null)
                     tb.OpenFile(fileName);
@@ -78,12 +75,12 @@ namespace Tester
                 tb.KeyDown += new KeyEventHandler(tb_KeyDown);
                 tb.MouseMove += new MouseEventHandler(tb_MouseMove);
                 tb.ChangedLineColor = changedLineColor;
-                if(btHighlightCurrentLine.Checked)
+                if (btHighlightCurrentLine.Checked)
                     tb.CurrentLineColor = currentLineColor;
                 tb.ShowFoldingLines = btShowFoldingLines.Checked;
                 tb.HighlightingRangeType = HighlightingRangeType.VisibleRange;
                 //create autocomplete popup menu
-                AutocompleteMenu popupMenu = new AutocompleteMenu(tb);
+                var popupMenu = new AutocompleteMenu(tb);
                 popupMenu.Items.ImageList = ilAutocomplete;
                 popupMenu.Opening += new EventHandler<CancelEventArgs>(popupMenu_Opening);
                 BuildAutocompleteMenu(popupMenu);
@@ -107,7 +104,7 @@ namespace Tester
                     //current char (before caret)
                     var c = CurrentTB[CurrentTB.Selection.Start.iLine][CurrentTB.Selection.Start.iChar - 1];
                     //green Style
-                    var greenStyleIndex = Range.ToStyleIndex(iGreenStyle);
+                    var greenStyleIndex = FastColoredTextBoxNS.Range.ToStyleIndex(iGreenStyle);
                     //if char contains green style then block popup menu
                     if ((c.style & greenStyleIndex) != 0)
                         e.Cancel = true;
@@ -116,7 +113,7 @@ namespace Tester
 
         private void BuildAutocompleteMenu(AutocompleteMenu popupMenu)
         {
-            List<AutocompleteItem> items = new List<AutocompleteItem>();
+            var items = new List<AutocompleteItem>();
 
             foreach (var item in snippets)
                 items.Add(new SnippetAutocompleteItem(item) { ImageIndex = 1 });
@@ -140,9 +137,9 @@ namespace Tester
         {
             var tb = sender as FastColoredTextBox;
             var place = tb.PointToPlace(e.Location);
-            var r = new Range(tb, place, place);
+            var r = new FastColoredTextBoxNS.Range(tb, place, place);
 
-            string text = r.GetFragment("[a-zA-Z]").Text;
+            var text = r.GetFragment("[a-zA-Z]").Text;
             lbWordUnderMouse.Text = text;
         }
 
@@ -154,7 +151,7 @@ namespace Tester
                 e.Handled = true;
             }
 
-            if (e.Modifiers == (Keys.Control|Keys.Shift) && e.KeyCode == Keys.OemMinus)
+            if (e.Modifiers == (Keys.Control | Keys.Shift) && e.KeyCode == Keys.OemMinus)
             {
                 NavigateForward();
                 e.Handled = true;
@@ -187,11 +184,11 @@ namespace Tester
                 return;//user selected diapason
             //get fragment around caret
             var fragment = tb.Selection.GetFragment(@"\w");
-            string text = fragment.Text;
+            var text = fragment.Text;
             if (text.Length == 0)
                 return;
             //highlight same words
-            Range[] ranges = tb.VisibleRange.GetRanges("\\b" + text + "\\b").ToArray();
+            var ranges = tb.VisibleRange.GetRanges("\\b" + text + "\\b").ToArray();
 
             if (ranges.Length > 1)
                 foreach (var r in ranges)
@@ -200,18 +197,18 @@ namespace Tester
 
         void tb_TextChangedDelayed(object sender, TextChangedEventArgs e)
         {
-            FastColoredTextBox tb = (sender as FastColoredTextBox);
+            var tb = (sender as FastColoredTextBox);
             //rebuild object explorer
-            string text = (sender as FastColoredTextBox).Text;
+            var text = (sender as FastColoredTextBox).Text;
             ThreadPool.QueueUserWorkItem(
-                (o)=>ReBuildObjectExplorer(text)
+                (o) => ReBuildObjectExplorer(text)
             );
 
             //show invisible chars
             HighlightInvisibleChars(e.ChangedRange);
         }
 
-        private void HighlightInvisibleChars(Range range)
+        private void HighlightInvisibleChars(FastColoredTextBoxNS.Range range)
         {
             range.ClearStyle(invisibleCharsStyle);
             if (btInvisibleChars.Checked)
@@ -224,58 +221,58 @@ namespace Tester
         {
             try
             {
-                List<ExplorerItem> list = new List<ExplorerItem>();
-                int lastClassIndex = -1;
+                var list = new List<ExplorerItem>();
+                var lastClassIndex = -1;
                 //find classes, methods and properties
-                Regex regex = new Regex(@"^(?<range>[\w\s]+\b(class|struct|enum|interface)\s+[\w<>,\s]+)|^\s*(public|private|internal|protected)[^\n]+(\n?\s*{|;)?", RegexOptions.Multiline);
+                var regex = new Regex(@"^(?<range>[\w\s]+\b(class|struct|enum|interface)\s+[\w<>,\s]+)|^\s*(public|private|internal|protected)[^\n]+(\n?\s*{|;)?", RegexOptions.Multiline);
                 foreach (Match r in regex.Matches(text))
                     try
                     {
-                        string s = r.Value;
-                        int i = s.IndexOfAny(new char[] { '=', '{', ';' });
+                        var s = r.Value;
+                        var i = s.IndexOfAny(new char[] { '=', '{', ';' });
                         if (i >= 0)
-                            s = s.Substring(0, i);
+                            s = s[..i];
                         s = s.Trim();
 
                         var item = new ExplorerItem() { title = s, position = r.Index };
                         if (Regex.IsMatch(item.title, @"\b(class|struct|enum|interface)\b"))
                         {
-                            item.title = item.title.Substring(item.title.LastIndexOf(' ')).Trim();
+                            item.title = item.title[item.title.LastIndexOf(' ')..].Trim();
                             item.type = ExplorerItemType.Class;
                             list.Sort(lastClassIndex + 1, list.Count - (lastClassIndex + 1), new ExplorerItemComparer());
                             lastClassIndex = list.Count;
                         }
                         else
                             if (item.title.Contains(" event "))
-                            {
-                                int ii = item.title.LastIndexOf(' ');
-                                item.title = item.title.Substring(ii).Trim();
-                                item.type = ExplorerItemType.Event;
-                            }
-                            else
+                        {
+                            var ii = item.title.LastIndexOf(' ');
+                            item.title = item.title[ii..].Trim();
+                            item.type = ExplorerItemType.Event;
+                        }
+                        else
                                 if (item.title.Contains("("))
-                                {
-                                    var parts = item.title.Split('(');
-                                    item.title = parts[0].Substring(parts[0].LastIndexOf(' ')).Trim() + "(" + parts[1];
-                                    item.type = ExplorerItemType.Method;
-                                }
-                                else
+                        {
+                            var parts = item.title.Split('(');
+                            item.title = parts[0][parts[0].LastIndexOf(' ')..].Trim() + "(" + parts[1];
+                            item.type = ExplorerItemType.Method;
+                        }
+                        else
                                     if (item.title.EndsWith("]"))
-                                    {
-                                        var parts = item.title.Split('[');
-                                        if (parts.Length < 2) continue;
-                                        item.title = parts[0].Substring(parts[0].LastIndexOf(' ')).Trim() + "[" + parts[1];
-                                        item.type = ExplorerItemType.Method;
-                                    }
-                                    else
-                                    {
-                                        int ii = item.title.LastIndexOf(' ');
-                                        item.title = item.title.Substring(ii).Trim();
-                                        item.type = ExplorerItemType.Property;
-                                    }
+                        {
+                            var parts = item.title.Split('[');
+                            if (parts.Length < 2) continue;
+                            item.title = parts[0][parts[0].LastIndexOf(' ')..].Trim() + "[" + parts[1];
+                            item.type = ExplorerItemType.Method;
+                        }
+                        else
+                        {
+                            var ii = item.title.LastIndexOf(' ');
+                            item.title = item.title[ii..].Trim();
+                            item.type = ExplorerItemType.Property;
+                        }
                         list.Add(item);
                     }
-                    catch { ;}
+                    catch {; }
 
                 list.Sort(lastClassIndex + 1, list.Count - (lastClassIndex + 1), new ExplorerItemComparer());
 
@@ -288,7 +285,7 @@ namespace Tester
                         })
                 );
             }
-            catch { ;}
+            catch {; }
         }
 
         enum ExplorerItemType
@@ -315,14 +312,14 @@ namespace Tester
         {
             if ((e.Item.Controls[0] as FastColoredTextBox).IsChanged)
             {
-                switch(MessageBox.Show("Do you want save " + e.Item.Title + " ?", "Save", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Information))
+                switch (MessageBox.Show("Do you want save " + e.Item.Title + " ?", "Save", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Information))
                 {
                     case System.Windows.Forms.DialogResult.Yes:
                         if (!Save(e.Item))
                             e.Cancel = true;
                         break;
                     case DialogResult.Cancel:
-                         e.Cancel = true;
+                        e.Cancel = true;
                         break;
                 }
             }
@@ -367,14 +364,14 @@ namespace Tester
         {
             if (tsFiles.SelectedItem != null)
             {
-                string oldFile = tsFiles.SelectedItem.Tag as string;
+                var oldFile = tsFiles.SelectedItem.Tag as string;
                 tsFiles.SelectedItem.Tag = null;
                 if (!Save(tsFiles.SelectedItem))
-                if(oldFile!=null)
-                {
-                    tsFiles.SelectedItem.Tag = oldFile;
-                    tsFiles.SelectedItem.Title = Path.GetFileName(oldFile);
-                }
+                    if (oldFile != null)
+                    {
+                        tsFiles.SelectedItem.Tag = oldFile;
+                        tsFiles.SelectedItem.Title = Path.GetFileName(oldFile);
+                    }
             }
         }
 
@@ -391,7 +388,8 @@ namespace Tester
 
         FastColoredTextBox CurrentTB
         {
-            get {
+            get
+            {
                 if (tsFiles.SelectedItem == null)
                     return null;
                 return (tsFiles.SelectedItem.Controls[0] as FastColoredTextBox);
@@ -440,7 +438,7 @@ namespace Tester
         {
             try
             {
-                if(CurrentTB != null && tsFiles.Items.Count>0)
+                if (CurrentTB != null && tsFiles.Items.Count > 0)
                 {
                     var tb = CurrentTB;
                     undoStripButton.Enabled = undoToolStripMenuItem.Enabled = tb.UndoEnabled;
@@ -473,7 +471,7 @@ namespace Tester
 
         private void printToolStripButton_Click(object sender, EventArgs e)
         {
-            if(CurrentTB!=null)
+            if (CurrentTB != null)
             {
                 var settings = new PrintDialogSettings();
                 settings.Title = tsFiles.SelectedItem.Title;
@@ -489,7 +487,7 @@ namespace Tester
         {
             if (e.KeyChar == '\r' && CurrentTB != null)
             {
-                Range r = tbFindChanged?CurrentTB.Range.Clone():CurrentTB.Selection.Clone();
+                var r = tbFindChanged ? CurrentTB.Range.Clone() : CurrentTB.Selection.Clone();
                 tbFindChanged = false;
                 r.End = new Place(CurrentTB[CurrentTB.LinesCount - 1].Count, CurrentTB.LinesCount - 1);
                 var pattern = Regex.Escape(tbFind.Text);
@@ -518,12 +516,12 @@ namespace Tester
 
         private void PowerfulCSharpEditor_FormClosing(object sender, FormClosingEventArgs e)
         {
-            List<FATabStripItem> list = new List<FATabStripItem>();
-            foreach (FATabStripItem tab in  tsFiles.Items)
+            var list = new List<FATabStripItem>();
+            foreach (FATabStripItem tab in tsFiles.Items)
                 list.Add(tab);
             foreach (var tab in list)
             {
-                TabStripItemClosingEventArgs args = new TabStripItemClosingEventArgs(tab);
+                var args = new TabStripItemClosingEventArgs(tab);
                 tsFiles_TabStripItemClosing(args);
                 if (args.Cancel)
                 {
@@ -550,7 +548,7 @@ namespace Tester
         {
             try
             {
-                ExplorerItem item = explorerList[e.RowIndex];
+                var item = explorerList[e.RowIndex];
                 if (e.ColumnIndex == 1)
                     e.Value = item.title;
                 else
@@ -570,7 +568,7 @@ namespace Tester
                             return;
                     }
             }
-            catch{;}
+            catch {; }
         }
 
         private void tsFiles_TabStripItemSelectionChanged(TabStripItemChangedEventArgs e)
@@ -578,7 +576,7 @@ namespace Tester
             if (CurrentTB != null)
             {
                 CurrentTB.Focus();
-                string text = CurrentTB.Text;
+                var text = CurrentTB.Text;
                 ThreadPool.QueueUserWorkItem(
                     (o) => ReBuildObjectExplorer(text)
                 );
@@ -599,13 +597,13 @@ namespace Tester
 
         private bool NavigateBackward()
         {
-            DateTime max = new DateTime();
-            int iLine = -1;
+            var max = new DateTime();
+            var iLine = -1;
             FastColoredTextBox tb = null;
-            for (int iTab = 0; iTab < tsFiles.Items.Count; iTab++)
+            for (var iTab = 0; iTab < tsFiles.Items.Count; iTab++)
             {
                 var t = (tsFiles.Items[iTab].Controls[0] as FastColoredTextBox);
-                for (int i = 0; i < t.LinesCount; i++)
+                for (var i = 0; i < t.LinesCount; i++)
                     if (t[i].LastVisit < lastNavigatedDateTime && t[i].LastVisit > max)
                     {
                         max = t[i].LastVisit;
@@ -629,13 +627,13 @@ namespace Tester
 
         private bool NavigateForward()
         {
-            DateTime min = DateTime.Now;
-            int iLine = -1;
+            var min = DateTime.Now;
+            var iLine = -1;
             FastColoredTextBox tb = null;
-            for (int iTab = 0; iTab < tsFiles.Items.Count; iTab++)
+            for (var iTab = 0; iTab < tsFiles.Items.Count; iTab++)
             {
                 var t = (tsFiles.Items[iTab].Controls[0] as FastColoredTextBox);
-                for (int i = 0; i < t.LinesCount; i++)
+                for (var i = 0; i < t.LinesCount; i++)
                     if (t[i].LastVisit > lastNavigatedDateTime && t[i].LastVisit < min)
                     {
                         min = t[i].LastVisit;
@@ -682,7 +680,7 @@ namespace Tester
         /// </summary>
         class InsertSpaceSnippet : AutocompleteItem
         {
-            string pattern;
+            readonly string pattern;
 
             public InsertSpaceSnippet(string pattern)
                 : base("")
@@ -757,8 +755,8 @@ namespace Tester
             public override string GetTextForReplace()
             {
                 //extend range
-                Range r = Parent.Fragment;
-                Place end = r.End;
+                var r = Parent.Fragment;
+                var end = r.End;
                 r.Start = enterPlace;
                 r.End = r.End;
                 //insert line break
@@ -790,8 +788,7 @@ namespace Tester
         {
             foreach (FATabStripItem tab in tsFiles.Items)
                 HighlightInvisibleChars((tab.Controls[0] as FastColoredTextBox).Range);
-            if (CurrentTB!=null)
-                CurrentTB.Invalidate();
+            CurrentTB?.Invalidate();
         }
 
         private void btHighlightCurrentLine_Click(object sender, EventArgs e)
@@ -803,8 +800,7 @@ namespace Tester
                 else
                     (tab.Controls[0] as FastColoredTextBox).CurrentLineColor = Color.Transparent;
             }
-            if (CurrentTB != null)
-                CurrentTB.Invalidate();
+            CurrentTB?.Invalidate();
         }
 
         private void commentSelectedToolStripMenuItem_Click(object sender, EventArgs e)
@@ -822,7 +818,7 @@ namespace Tester
             //expand selection
             CurrentTB.Selection.Expand();
             //get text of selected lines
-            string text = Environment.NewLine + CurrentTB.Selection.Text;
+            var text = Environment.NewLine + CurrentTB.Selection.Text;
             //move caret to end of selected lines
             CurrentTB.Selection.Start = CurrentTB.Selection.End;
             //insert text
@@ -836,7 +832,7 @@ namespace Tester
             //expand selection
             CurrentTB.Selection.Expand();
             //get text of selected lines
-            string text = Environment.NewLine + CurrentTB.Selection.Text;
+            var text = Environment.NewLine + CurrentTB.Selection.Text;
             //comment lines
             CurrentTB.InsertLinePrefix("//");
             //move caret to end of selected lines
@@ -849,7 +845,7 @@ namespace Tester
 
         private void bookmarkPlusButton_Click(object sender, EventArgs e)
         {
-            if(CurrentTB == null) 
+            if (CurrentTB == null)
                 return;
             CurrentTB.BookmarkLine(CurrentTB.Selection.Start.iLine);
         }
@@ -866,12 +862,13 @@ namespace Tester
             gotoButton.DropDownItems.Clear();
             foreach (Control tab in tsFiles.Items)
             {
-                FastColoredTextBox tb = tab.Controls[0] as FastColoredTextBox;
+                var tb = tab.Controls[0] as FastColoredTextBox;
                 foreach (var bookmark in tb.Bookmarks)
                 {
                     var item = gotoButton.DropDownItems.Add(bookmark.Name + " [" + Path.GetFileNameWithoutExtension(tab.Tag as String) + "]");
                     item.Tag = bookmark;
-                    item.Click += (o, a) => {
+                    item.Click += (o, a) =>
+                    {
                         var b = (Bookmark)(o as ToolStripItem).Tag;
                         try
                         {
@@ -892,8 +889,7 @@ namespace Tester
         {
             foreach (FATabStripItem tab in tsFiles.Items)
                 (tab.Controls[0] as FastColoredTextBox).ShowFoldingLines = btShowFoldingLines.Checked;
-            if (CurrentTB != null)
-                CurrentTB.Invalidate();
+            CurrentTB?.Invalidate();
         }
 
         private void Zoom_click(object sender, EventArgs e)
@@ -905,17 +901,17 @@ namespace Tester
 
     public class InvisibleCharsRenderer : Style
     {
-        Pen pen;
+        readonly Pen pen;
 
         public InvisibleCharsRenderer(Pen pen)
         {
             this.pen = pen;
         }
 
-        public override void Draw(Graphics gr, Point position, Range range)
+        public override void Draw(Graphics gr, Point position, FastColoredTextBoxNS.Range range)
         {
             var tb = range.tb;
-            using(Brush brush = new SolidBrush(pen.Color))
+            using Brush brush = new SolidBrush(pen.Color);
             foreach (var place in range)
             {
                 switch (tb[place].c)

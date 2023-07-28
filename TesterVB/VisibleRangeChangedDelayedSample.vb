@@ -1,25 +1,21 @@
-Imports FastColoredTextBoxNS
-Imports System
 Imports System.ComponentModel
-Imports System.Drawing
 Imports System.Text
-Imports System.Windows.Forms
 
 Namespace TesterVB
     Public Class VisibleRangeChangedDelayedSample
         Inherits Form
 
-        Private components As IContainer = Nothing
+        Private ReadOnly components As IContainer = Nothing
 
         Private label1 As Label
 
         Private fctb As FastColoredTextBox
 
-        Private BlueStyle As Style = New TextStyle(Brushes.Blue, Nothing, FontStyle.Regular)
+        Private ReadOnly BlueStyle As Style = New TextStyle(Brushes.Blue, Nothing, FontStyle.Regular)
 
-        Private RedStyle As Style = New TextStyle(Brushes.Red, Nothing, FontStyle.Regular)
+        Private ReadOnly RedStyle As Style = New TextStyle(Brushes.Red, Nothing, FontStyle.Regular)
 
-        Private MaroonStyle As Style = New TextStyle(Brushes.Maroon, Nothing, FontStyle.Regular)
+        Private ReadOnly MaroonStyle As Style = New TextStyle(Brushes.Maroon, Nothing, FontStyle.Regular)
 
         Protected Overrides Sub Dispose(disposing As Boolean)
             If disposing AndAlso Me.components IsNot Nothing Then
@@ -81,7 +77,7 @@ Namespace TesterVB
             Me.HTMLSyntaxHighlight(Me.fctb.VisibleRange)
         End Sub
 
-        Private Sub HTMLSyntaxHighlight(range As Range)
+        Private Sub HTMLSyntaxHighlight(range As FastColoredTextBoxNS.Range)
             range.ClearStyle(New Style() {Me.BlueStyle, Me.MaroonStyle, Me.RedStyle})
             range.SetStyle(Me.BlueStyle, "<|/>|</|>")
             range.SetStyle(Me.MaroonStyle, "<(?<range>[!\w]+)")

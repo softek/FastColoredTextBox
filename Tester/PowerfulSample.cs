@@ -1,16 +1,10 @@
 ﻿using System;
-using System.Drawing.Drawing2D;
-using System.Threading;
-using System.Windows.Forms;
 using System.Drawing;
-using FastColoredTextBoxNS;
-using System.Diagnostics;
-using System.Text.RegularExpressions;
 using System.IO;
 using System.Linq;
-using System.Collections.Generic;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
+using System.Text.RegularExpressions;
+using System.Windows.Forms;
+using FastColoredTextBoxNS;
 
 namespace Tester
 {
@@ -19,14 +13,14 @@ namespace Tester
         string lang = "CSharp (custom highlighter)";
 
         //styles
-        TextStyle BlueStyle = new TextStyle(Brushes.Blue, null, FontStyle.Regular);
-        TextStyle BoldStyle = new TextStyle(null, null, FontStyle.Bold | FontStyle.Underline);
-        TextStyle GrayStyle = new TextStyle(Brushes.Gray, null, FontStyle.Regular);
-        TextStyle MagentaStyle = new TextStyle(Brushes.Magenta, null, FontStyle.Regular);
-        TextStyle GreenStyle = new TextStyle(Brushes.Green, null, FontStyle.Italic);
-        TextStyle BrownStyle = new TextStyle(Brushes.Brown, null, FontStyle.Italic);
-        TextStyle MaroonStyle = new TextStyle(Brushes.Maroon, null, FontStyle.Regular);
-        MarkerStyle SameWordsStyle = new MarkerStyle(new SolidBrush(Color.FromArgb(40, Color.Gray)));
+        readonly TextStyle BlueStyle = new TextStyle(Brushes.Blue, null, FontStyle.Regular);
+        readonly TextStyle BoldStyle = new TextStyle(null, null, FontStyle.Bold | FontStyle.Underline);
+        readonly TextStyle GrayStyle = new TextStyle(Brushes.Gray, null, FontStyle.Regular);
+        readonly TextStyle MagentaStyle = new TextStyle(Brushes.Magenta, null, FontStyle.Regular);
+        readonly TextStyle GreenStyle = new TextStyle(Brushes.Green, null, FontStyle.Italic);
+        readonly TextStyle BrownStyle = new TextStyle(Brushes.Brown, null, FontStyle.Italic);
+        readonly TextStyle MaroonStyle = new TextStyle(Brushes.Maroon, null, FontStyle.Regular);
+        readonly MarkerStyle SameWordsStyle = new MarkerStyle(new SolidBrush(Color.FromArgb(40, Color.Gray)));
 
         public PowerfulSample()
         {
@@ -34,11 +28,11 @@ namespace Tester
         }
 
         private void InitStylesPriority()
-        {           
+        {
             //add this style explicitly for drawing under other styles
             fctb.AddStyle(SameWordsStyle);
         }
-        
+
         private void fctb_TextChanged(object sender, TextChangedEventArgs e)
         {
             switch (lang)
@@ -62,7 +56,7 @@ namespace Tester
 
                 fctb.OnSyntaxHighlight(new TextChangedEventArgs(fctb.Range));
             }
-        }   
+        }
 
         private void CSharpSyntaxHighlight(TextChangedEventArgs e)
         {
@@ -78,7 +72,7 @@ namespace Tester
             //comment highlighting
             e.ChangedRange.SetStyle(GreenStyle, @"//.*$", RegexOptions.Multiline);
             e.ChangedRange.SetStyle(GreenStyle, @"(/\*.*?\*/)|(/\*.*)", RegexOptions.Singleline);
-            e.ChangedRange.SetStyle(GreenStyle, @"(/\*.*?\*/)|(.*\*/)", RegexOptions.Singleline|RegexOptions.RightToLeft);
+            e.ChangedRange.SetStyle(GreenStyle, @"(/\*.*?\*/)|(.*\*/)", RegexOptions.Singleline | RegexOptions.RightToLeft);
             //number highlighting
             e.ChangedRange.SetStyle(MagentaStyle, @"\b\d+[\.]?\d*([eE]\-?\d+)?[lLdDfF]?\b|\b0x[a-fA-F\d]+\b");
             //attribute highlighting
@@ -155,7 +149,7 @@ namespace Tester
         {
             //this example shows how to collapse all #region blocks (C#)
             if (!lang.StartsWith("CSharp")) return;
-            for (int iLine = 0; iLine < fctb.LinesCount; iLine++)
+            for (var iLine = 0; iLine < fctb.LinesCount; iLine++)
             {
                 if (fctb[iLine].FoldingStartMarker == @"#region\b")//marker @"#region\b" was used in SetFoldingMarkers()
                     fctb.CollapseFoldingBlock(iLine);
@@ -166,7 +160,7 @@ namespace Tester
         {
             //this example shows how to expand all #region blocks (C#)
             if (!lang.StartsWith("CSharp")) return;
-            for (int iLine = 0; iLine < fctb.LinesCount; iLine++)
+            for (var iLine = 0; iLine < fctb.LinesCount; iLine++)
             {
                 if (fctb[iLine].FoldingStartMarker == @"#region\b")//marker @"#region\b" was used in SetFoldingMarkers()
                     fctb.ExpandFoldedBlock(iLine);
@@ -185,11 +179,11 @@ namespace Tester
 
         private void hTMLToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            SaveFileDialog sfd = new SaveFileDialog();
+            var sfd = new SaveFileDialog();
             sfd.Filter = "HTML with <PRE> tag|*.html|HTML without <PRE> tag|*.html";
             if (sfd.ShowDialog() == DialogResult.OK)
             {
-                string html = "";
+                var html = "";
 
                 if (sfd.FilterIndex == 1)
                 {
@@ -197,8 +191,8 @@ namespace Tester
                 }
                 if (sfd.FilterIndex == 2)
                 {
-                    
-                    ExportToHTML exporter = new ExportToHTML();
+
+                    var exporter = new ExportToHTML();
                     exporter.UseBr = true;
                     exporter.UseNbsp = false;
                     exporter.UseForwardNbsp = true;
@@ -217,14 +211,14 @@ namespace Tester
 
             //get fragment around caret
             var fragment = fctb.Selection.GetFragment(@"\w");
-            string text = fragment.Text;
+            var text = fragment.Text;
             if (text.Length == 0)
                 return;
             //highlight same words
             var ranges = fctb.VisibleRange.GetRanges("\\b" + text + "\\b").ToArray();
-            if(ranges.Length>1)
-            foreach(var r in ranges)
-                r.SetStyle(SameWordsStyle);
+            if (ranges.Length > 1)
+                foreach (var r in ranges)
+                    r.SetStyle(SameWordsStyle);
         }
 
         private void goForwardCtrlShiftToolStripMenuItem_Click(object sender, EventArgs e)
@@ -246,9 +240,9 @@ namespace Tester
 
         void GoLeftBracket(FastColoredTextBox tb, char leftBracket, char rightBracket)
         {
-            Range range = tb.Selection.Clone();//need to clone because we will move caret
-            int counter = 0;
-            int maxIterations = maxBracketSearchIterations;
+            var range = tb.Selection.Clone();//need to clone because we will move caret
+            var counter = 0;
+            var maxIterations = maxBracketSearchIterations;
             while (range.GoLeftThroughFolded())//move caret left
             {
                 if (range.CharAfterStart == leftBracket) counter++;
@@ -270,8 +264,8 @@ namespace Tester
         void GoRightBracket(FastColoredTextBox tb, char leftBracket, char rightBracket)
         {
             var range = tb.Selection.Clone();//need clone because we will move caret
-            int counter = 0;
-            int maxIterations = maxBracketSearchIterations;
+            var counter = 0;
+            var maxIterations = maxBracketSearchIterations;
             do
             {
                 if (range.CharAfterStart == leftBracket) counter++;
@@ -347,7 +341,7 @@ namespace Tester
             fctb.Print(new PrintDialogSettings() { ShowPrintPreviewDialog = true });
         }
 
-        Random rnd = new Random();
+        readonly Random rnd = new Random();
 
         private void miChangeColors_Click(object sender, EventArgs e)
         {
@@ -386,17 +380,17 @@ namespace Tester
         private void changeHotkeysToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var form = new HotkeysEditorForm(fctb.HotkeysMapping);
-            if(form.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            if (form.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 fctb.HotkeysMapping = form.GetHotkeys();
         }
 
         private void rTFToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            SaveFileDialog sfd = new SaveFileDialog();
+            var sfd = new SaveFileDialog();
             sfd.Filter = "RTF|*.rtf";
             if (sfd.ShowDialog() == DialogResult.OK)
             {
-                string rtf = fctb.Rtf;
+                var rtf = fctb.Rtf;
                 File.WriteAllText(sfd.FileName, rtf);
             }
         }

@@ -18,12 +18,12 @@ namespace Tester
 
         private void GenerateText()
         {
-            Random rnd = new Random();
+            var rnd = new Random();
 
             fctb.BeginUpdate();
             fctb.Selection.BeginUpdate();
 
-            for (int i = 0; i < 50000; i++)
+            for (var i = 0; i < 50000; i++)
             {
                 switch (rnd.Next(4))
                 {
@@ -41,10 +41,10 @@ namespace Tester
 
     internal class ReadOnlyFCTB : FastColoredTextBox
     {
-        TextStyle linkStyle = new TextStyle(Brushes.Blue, null, FontStyle.Underline);
-        TextStyle visitedLinkStyle = new TextStyle(Brushes.Brown, null, FontStyle.Underline);
-        TextStyle boldStyle = new TextStyle(Brushes.Navy, null, FontStyle.Bold);
-        List<BlockDesc> blockDescs = new List<BlockDesc>();
+        readonly TextStyle linkStyle = new TextStyle(Brushes.Blue, null, FontStyle.Underline);
+        readonly TextStyle visitedLinkStyle = new TextStyle(Brushes.Brown, null, FontStyle.Underline);
+        readonly TextStyle boldStyle = new TextStyle(Brushes.Navy, null, FontStyle.Bold);
+        readonly List<BlockDesc> blockDescs = new List<BlockDesc>();
 
         Point lastMouseCoord;
         Place lastPlace;
@@ -66,11 +66,10 @@ namespace Tester
 
             if (desc.IsBold)
                 AppendText(text, boldStyle);
+            else if (!string.IsNullOrEmpty(desc.URL))
+                AppendText(text, linkStyle);
             else
-                if (!string.IsNullOrEmpty(desc.URL))
-                    AppendText(text, linkStyle);
-                else
-                    AppendText(text);
+                AppendText(text);
 
             //if descriptor contains some additional data ...
             if (!string.IsNullOrEmpty(desc.URL) || !string.IsNullOrEmpty(desc.ToolTip))
@@ -120,7 +119,7 @@ namespace Tester
             var desc = GetDesc(lastPlace);
             if (desc != null && !string.IsNullOrEmpty(desc.URL))
             {
-                var r = new Range(this, desc.Start, desc.End);
+                var r = new FastColoredTextBoxNS.Range(this, desc.Start, desc.End);
                 r.ClearStyle(linkStyle);
                 r.SetStyle(visitedLinkStyle);
                 BeginInvoke(new MethodInvoker(() => Process.Start(desc.URL)));

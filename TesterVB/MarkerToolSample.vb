@@ -1,9 +1,5 @@
-Imports FastColoredTextBoxNS
-Imports System
 Imports System.ComponentModel
-Imports System.Drawing
 Imports System.Drawing.Drawing2D
-Imports System.Windows.Forms
 
 Namespace TesterVB
     Public Class MarkerToolSample
@@ -29,13 +25,13 @@ Namespace TesterVB
 
         Private toolStripMenuItem2 As ToolStripSeparator
 
-        Private shortCutStyle As ShortcutStyle = New ShortcutStyle(Pens.Maroon)
+        Private ReadOnly shortCutStyle As ShortcutStyle = New ShortcutStyle(Pens.Maroon)
 
-        Private YellowStyle As MarkerStyle = New MarkerStyle(New SolidBrush(Color.FromArgb(180, Color.Yellow)))
+        Private ReadOnly YellowStyle As MarkerStyle = New MarkerStyle(New SolidBrush(Color.FromArgb(180, Color.Yellow)))
 
-        Private RedStyle As MarkerStyle = New MarkerStyle(New SolidBrush(Color.FromArgb(180, Color.Red)))
+        Private ReadOnly RedStyle As MarkerStyle = New MarkerStyle(New SolidBrush(Color.FromArgb(180, Color.Red)))
 
-        Private GreenStyle As MarkerStyle = New MarkerStyle(New SolidBrush(Color.FromArgb(180, Color.Green)))
+        Private ReadOnly GreenStyle As MarkerStyle = New MarkerStyle(New SolidBrush(Color.FromArgb(180, Color.Green)))
 
         Protected Overrides Sub Dispose(disposing As Boolean)
             If disposing AndAlso Me.components IsNot Nothing Then
@@ -132,10 +128,10 @@ Namespace TesterVB
         End Sub
 
         Private Sub fctb_SelectionChangedDelayed(sender As Object, e As EventArgs)
-            Dim selection As Range = Me.fctb.Selection
+            Dim selection As FastColoredTextBoxNS.Range = Me.fctb.Selection
             Me.fctb.VisibleRange.ClearStyle(New Style() {Me.shortCutStyle})
             If Not selection.IsEmpty Then
-                Dim r As Range = selection.Clone()
+                Dim r As FastColoredTextBoxNS.Range = selection.Clone()
                 r.Normalize()
                 r.Start = r.[End]
                 r.GoLeft(True)
@@ -173,7 +169,7 @@ Namespace TesterVB
         End Sub
 
         Private Sub TrimSelection()
-            Dim sel As Range = Me.fctb.Selection
+            Dim sel As FastColoredTextBoxNS.Range = Me.fctb.Selection
             sel.Normalize()
             While Char.IsWhiteSpace(sel.CharAfterStart) AndAlso sel.Start < sel.[End]
                 sel.GoRight(True)
